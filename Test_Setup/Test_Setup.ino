@@ -84,14 +84,19 @@ NewPing sonarBot(trigBot, echoBot, MAX_DISTANCE); // NewPing setup of pins and m
 
 
 //DEFINE ROTARY ENCODER VARIABLES
-#define COUNT_REV 12 //Rodery encoder output pulse per rotation (Need to change depemnding on encoder)
+#define COUNT_REV 115 //Rodery encoder output pulse per rotation (Need to change depemnding on encoder)
 #define ENCODER_IN 3 //Encoder output to Aurdino Interrupt pin
-volatile long encoderValue = 0; //Pulse count from encoder 
-int interval = 10; //.1 second interval measuments 
-long previousMillis = 0;
-long currentMillis = 0;
-float rpm = 0;
-int encoderOverallValue;
+
+ volatile long encoderValue = 0; //Pulse count from encoder 
+ int interval = 100; //1 second interval measuments 
+ long previousMillis = 0;
+ long currentMillis = 0;
+ float rpm = 0;
+ float theta =0;
+ float thetaDot = 0;
+ float x = 0;
+ float xdot = 0;
+ int encoderOverallValue;
 
 
 //DEFINE GENERAL USE VARIABLES
@@ -377,22 +382,22 @@ int proportionSpeed(int deltaX){ //find volt to reduce speed proportional to dis
 }
 
 void readThetaAndX(void){ //read theta and thetaDot, translate to x and xDot
-  currentMillis = millis(); //find current board time
+   currentMillis = millis();
   
-  if (currentMillis - previousMillis > interval){ //if more than 1 second has passed
+  
+  if (currentMillis - previousMillis > interval){
     int timefortheta = currentMillis - previousMillis;
-    previousMillis = currentMillis; //update previous time
-    
-    rpm = (float)(encoderValue * 600.0 / COUNT_REV); //Reads in every 0.1 seconds
-    theta = (float)(theta + ((rpm / 60.0) * 2.0 * 3.14159)* (timefortheta/1000)); // Radians 
-  //theta = (encoderOverallValue / COUNT_REV) * 2.0 * 3.14159; //Another way to calulate theta 
-    thetaDot = (float)((rpm /60.0) * 2.0 * 3.14159); //Radians Per Second
-    x = (float)(70 - (theta * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
-    xDot = (float)(thetaDot * 1.358); //Radius of the pully goes in the second term 
-    
-    encoderValue = 0;
-  }
+    previousMillis = currentMillis;
+  
 
+  rpm = (float)(encoderValue * 600.0 / COUNT_REV);
+  //theta = (float)(theta + ((rpm / 60.0) * 2.0 * 3.14159)* (timefortheta/1000)); // Radians 
+  theta = ((float)encoderOverallValue / COUNT_REV) * 2.0 * 3.14159; //Another way to calulate theta 
+  thetaDot = ((float)(rpm /60.0) * 2.0 * 3.14159); //Radians Per Second
+  x = (float)(70 - (theta * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
+  xdot = (float)(thetaDot * 1.358); //Radius of the pully goes in the second term 
+  encoderValue = 0;
+  }
 }
 
 void moveDown (void){ //feedback loop down
@@ -492,5 +497,6 @@ void moveUp (void){ //feedback loop up
 }
 
 void updateEncoder(void){
-  encoderValue ++; //Increment Value for Each pulse from Encoder 
+  encoderValue ++;
+  encoderOverallValue ++;
 }
