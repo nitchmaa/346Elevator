@@ -1,7 +1,7 @@
 // ELEVATOR CODE
 // VERSION 2.1
 // LAST REVISED BY: MB
-// REVISION DATE: 11/10/23
+// REVISION DATE: 11/13/23
 
 /* TO DO:
  * - Complete functions
@@ -86,14 +86,21 @@ NewPing sonarBot(trigBot, echoBot, MAX_DISTANCE); // NewPing setup of pins and m
 
 
 //DEFINE ROTARY ENCODER VARIABLES
-#define COUNT_REV 12 //Rodery encoder output pulse per rotation (Need to change depemnding on encoder)
+#define COUNT_REV 115 //Rodery encoder output pulse per rotation (Need to change depemnding on encoder)
 #define ENCODER_IN 3 //Encoder output to Aurdino Interrupt pin
-volatile long encoderValue = 0; //Pulse count from encoder 
-int interval = 10; //.1 second interval measuments 
-long previousMillis = 0;
-long currentMillis = 0;
-float rpm = 0;
-int encoderOverallValue;
+
+ volatile long encoderValue = 0; //Pulse count from encoder 
+ int interval = 100; //1 second interval measuments 
+ long previousMillis = 0;
+ long currentMillis = 0;
+ float rpm = 0;
+ float theta =0;
+ float thetaDot = 0;
+ float x = 0;
+ float xDot = 0;
+ int encoderOverallValue;
+
+ int prevTheta;
 
 
 //DEFINE GENERAL USE VARIABLES
@@ -102,20 +109,15 @@ char substate = 'A';
 
 int objectPlat = 0; //stores response from function for whether object has been detected
 
-volatile int theta = 0; //starts at angle of 0
-volatile int thetaDot = 0; //starts at rotational rest
-volatile int x = 70; //starts at top platform x = 70 cm
-volatile int xDot = 0; //starts at translational rest
-
 int topX = 70; //x of top floor
 int botX = 0; //x of bottom floor
-int errorMargin = 0.25; //margin of error
+float errorMargin = 0.25; //margin of error
 int xClose = 8; //to determine whether wanted - actual difference is small or large
 
-volatile long voltage; //store current voltage being sent to motor
-volatile long steadyVolt;
-volatile long steadyX;
+int dir = 1; //1 up, 2 down
+float changeTheta;
 
+volatile long voltage; //store current voltage being sent to motor
 
 void setup() {
   Serial.begin(9600); // Opens serial port and sets the data rate to 9600 bits-per-second
@@ -129,6 +131,9 @@ void setup() {
 
 void loop() {
   while(1){
+    moveUp();
+
+    /*
     switch (state) {
       case 1:
         if(substate == 'A'){
@@ -193,7 +198,7 @@ void loop() {
         digitalWrite(LED_BUILTIN, HIGH);
         stopMotor();
         break;
-    }
+    }*/
   }
 }
 
@@ -277,18 +282,21 @@ void motorDown (void){ //set direction down
   digitalWrite(MP1, LOW);
   digitalWrite(MP2, HIGH);
   Serial.println("Direction: DOWN");
+  dir = 2;
 }
 
 void motorUp (void){ //set direction up
   digitalWrite(MP1, HIGH);
   digitalWrite(MP2, LOW);
   Serial.println("Direction: UP");
+  dir = 1;
 }
 
 void stopMotor (void){ //stops elevator
   digitalWrite(MP1, LOW);
   digitalWrite(MP2, LOW);
   Serial.println("Motor stopped.");
+  dir = 0;
 }
 
 void motorSpeed(int ein){ //set motor speed; receives input voltage
@@ -356,22 +364,39 @@ int proportionSpeed(int deltaX){ //find volt to reduce speed proportional to dis
 }
 
 void readThetaAndX(void){ //read theta and thetaDot, translate to x and xDot
-  currentMillis = millis(); //find current board time
+   currentMillis = millis();
   
-  if (currentMillis - previousMillis > interval){ //if more than 1 second has passed
+  if (currentMillis - previousMillis > interval){
     int timefortheta = currentMillis - previousMillis;
-    previousMillis = currentMillis; //update previous time
-    
-    rpm = (float)(encoderValue * 600.0 / COUNT_REV); //Reads in every 0.1 seconds
-    theta = (float)(theta + ((rpm / 60.0) * 2.0 * 3.14159)* (timefortheta/1000)); // Radians 
-  //theta = (encoderOverallValue / COUNT_REV) * 2.0 * 3.14159; //Another way to calulate theta 
-    thetaDot = (float)((rpm /60.0) * 2.0 * 3.14159); //Radians Per Second
-    x = (float)(70 - (theta * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
-    xDot = (float)(thetaDot * 1.358); //Radius of the pully goes in the second term 
-    
-    encoderValue = 0;
+    previousMillis = currentMillis;
+  
+  rpm = (float)(encoderValue * 600.0 / COUNT_REV);
+  //theta = (float)(theta + ((rpm / 60.0) * 2.0 * 3.14159)* (timefortheta/1000)); // Radians 
+  theta = ((float)encoderOverallValue / COUNT_REV) * 2.0 * 3.14159; //Another way to calulate theta 
+  
+  changeTheta = theta - prevTheta;
+  prevTheta = theta;
+  
+  thetaDot = ((float)(rpm /60.0) * 2.0 * 3.14159); //Radians Per Second
+  if(dir == 1){ //moving up
+    x = (float)(x + (changeTheta * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
   }
+  else if (dir == 2){ //moving down
+    x = (float)(x - (changeTheta * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
+  }
+  xDot = (float)(thetaDot * 1.358); //Radius of the pully goes in the second term 
+  encoderValue = 0;
 
+  Serial.print("Theta = ");
+      Serial.println(theta);
+      Serial.print("ThetaDot = ");
+      Serial.println(thetaDot);
+      Serial.print("x = ");
+      Serial.println(x);
+      Serial.print("xDot = ");
+      Serial.println(xDot);
+      Serial.println("-------------------------");
+  }
 }
 
 void moveDown (void){ //feedback loop down
@@ -379,7 +404,7 @@ void moveDown (void){ //feedback loop down
   int counter = 0;
   int finished = 0;
   int volt;
-  int dx;
+  float dx;
 
   Serial.println("Feedback loop, down.");
 
@@ -395,8 +420,6 @@ void moveDown (void){ //feedback loop down
       counter++; //increment counter
       if(counter == 200){ //elevator has stablized, end while loop
         finished = 1;
-        steadyVolt = voltage;
-        steadyX = botX;
       }
     }
     else if (x > botX){ //x above floor
@@ -424,12 +447,13 @@ void moveDown (void){ //feedback loop down
   }
 }
 
+
 void moveUp (void){ //feedback loop up
-  int initialVolt = 5;
+  int initialVolt = 30;
   int counter = 0;
   int finished = 0;
   int volt;
-  int dx;
+  float dx;
 
   Serial.println("Feedback loop, up.");
 
@@ -441,14 +465,36 @@ void moveUp (void){ //feedback loop up
   while(finished != 1){ //loop until elevator stablized at destination
     readThetaAndX(); //get current position and speed
 
+    if(xDot < 5){
+      voltage = voltage + 10;
+    }
+
     if(x < topX && x > (topX - errorMargin)){ //x at top floor within margin of error
       counter++; //increment counter
       if(counter == 200){ //elevator has stablized, end while loop
         finished = 1;
-        steadyVolt = voltage;
-        steadyX = topX;
       }
     }
+    else if (x > topX){ //x above floor (overshoot)
+      counter = 0; //if not at top floor, reset counter
+      motorDown(); //set direction down
+      voltage = 25;
+      motorSpeed(voltage);
+    }
+    else if(x < (botX - errorMargin)){ //x below floor
+      counter = 0; //if not at top floor, reset counter
+      motorUp(); //set direction up
+      dx = topX - x; //find difference between wanted x and actual x
+      if(dx <= xClose){ //small difference, set speed proportional to difference
+        voltage = 25;
+        motorSpeed(voltage);
+      }
+      else{ //large difference, set constant speed
+        voltage = initialVolt;
+        motorSpeed(voltage);
+      }
+    }
+    /*
     else if (x > topX){ //x above floor (overshoot)
       counter = 0; //if not at top floor, reset counter
       motorDown(); //set direction down
@@ -468,28 +514,15 @@ void moveUp (void){ //feedback loop up
         volt = constantSpeed();
         motorSpeed(volt);
       }
-    }
+    }*/
     Serial.print("Current motor voltage: ");
     Serial.println(volt);
+    Serial.println(encoderValue);
   }
 }
 
-void holdPos(void){
-  double Kh = 0.1;
-  double error;
-  motorUp();
-  readThetaAndX();
-
-  if(x < steadyX){
-    error = -xDot;
-  }
-  else if (x > steadyX){
-    error = xDot;
-  }
-  int tempVolt = voltage + Kh*error;
-  motorSpeed(tempVolt);
-}
 
 void updateEncoder(void){
-  encoderValue ++; //Increment Value for Each pulse from Encoder 
+  encoderValue ++;
+  encoderOverallValue ++;
 }

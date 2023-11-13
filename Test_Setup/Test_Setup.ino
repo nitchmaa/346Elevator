@@ -98,6 +98,8 @@ NewPing sonarBot(trigBot, echoBot, MAX_DISTANCE); // NewPing setup of pins and m
  float xDot = 0;
  int encoderOverallValue;
 
+ int prevTheta;
+
 
 //DEFINE GENERAL USE VARIABLES
 int state = 1;
@@ -383,12 +385,16 @@ void readThetaAndX(void){ //read theta and thetaDot, translate to x and xDot
   rpm = (float)(encoderValue * 600.0 / COUNT_REV);
   //theta = (float)(theta + ((rpm / 60.0) * 2.0 * 3.14159)* (timefortheta/1000)); // Radians 
   theta = ((float)encoderOverallValue / COUNT_REV) * 2.0 * 3.14159; //Another way to calulate theta 
+  
+  changeTheta = theta - prevTheta;
+  prevTheta = theta;
+  
   thetaDot = ((float)(rpm /60.0) * 2.0 * 3.14159); //Radians Per Second
   if(dir == 1){ //moving up
-    x = (float)((theta * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
+    x = (float)(x + (changeTheta * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
   }
   else if (dir == 2){ //moving down
-    x = (float)(70 - (theta * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
+    x = (float)(x - (changeTheta * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
   }
   xDot = (float)(thetaDot * 1.358); //Radius of the pully goes in the second term 
   encoderValue = 0;
