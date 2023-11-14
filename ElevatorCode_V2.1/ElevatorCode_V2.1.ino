@@ -135,7 +135,7 @@ void setup() {
 
 void loop() {
   while(1){
-    stopMotor();
+    moveUp();
 
     /*
     moveUp();
