@@ -41,16 +41,16 @@ void loop() {
     previousMillis = currentMillis;
   
 
-   rpm = (float)(encoderValue * 60.0 / COUNT_REV);
+   rpm = (float)(encoderValue * 600.0 / COUNT_REV);
    //theta = (float)(theta + ((rpm / 60.0) * 2.0 * 3.14159)* (timefortheta/1000)); // Radians 
-   theta = ((float)(encoderOverallValue / COUNT_REV) * 2 * 3.14159);
+   theta = (((float)encoderOverallValue / COUNT_REV ) * 2 * 3.14159);
    thetaDot = (float)((rpm /60.0) * 2.0 * 3.14159); //Radians Per Second
-   x = (float)((theta * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
-   xdot = (float)(thetaDot * 1.358); //Radius of the pully goes in the second term 
+   x = ((float)(theta * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
+   xdot = ((float)thetaDot * 1.358); //Radius of the pully goes in the second term 
   
   
 
-  if(rpm > 0){
+  if(rpm != 0){
   
     Serial.print("Pulses: ");
     Serial.print(encoderValue);
@@ -85,11 +85,11 @@ void loop() {
 void updateEncoder(){
   b = digitalRead(ENCODER_IN2);
   if (b == 0){
-      encoderValue ++;
-      encoderOverallValue ++;
-  }else {
       encoderValue --;
       encoderOverallValue --;
+  }else {
+      encoderValue ++;
+      encoderOverallValue ++;
   }
   
 }
