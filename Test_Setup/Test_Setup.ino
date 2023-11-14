@@ -130,14 +130,10 @@ void setup() {
 
 void loop() {
   while(1){
-    Serial.println("Pausing.");
-    moveUp();
 
-    stopMotor();
-    delay(2000);
-    /*
+    
     Serial.println("Testing: Top Stepper Motor");
-    topActLoad(5)
+    topActLoad(5);
     /*
     stepTop.moveTo(5*SPR/16); //Set the target motor position (i.e. turn motor for 3/8 full revolutions)
     stepTop.runToPosition(); // Run the motor to the target position
@@ -145,9 +141,9 @@ void loop() {
     stepTop.moveTo(-5*SPR/16); //Set the target motor position (back to start)
     stepTop.runToPosition(); // Run the motor to the target position (start)
     
-    delay(1000);
+    delay(1000);*/
     Serial.println("Testing: Bottom Stepper Motor");
-    botActLoad(5)
+    botActLoad(5);
     /*
     stepBot.moveTo(5*SPR/16); //Set the target motor position (i.e. turn motor for 3/8 full revolutions)
     stepBot.runToPosition(); // Run the motor to the target position
@@ -273,20 +269,26 @@ int objectDetect(void){ //detect object at platforms; returns 0 if no object, 1 
 
 void topActLoad (int frac){ //run top actuator
   Serial.println("Running top stepper motor.");
-  stepTop.moveTo(frac/16*SPR); //Set the target motor position (i.e. turn motor for 3/8 full revolutions)
-  stepTop.runToPosition(); // Run the motor to the target position
-  delay(500);
-  stepTop.moveTo(-frac/16*SPR); //Set the target motor position (back to start)
-  stepTop.runToPosition(); // Run the motor to the target position (start)
+  stepTop.moveTo(5*SPR/16); //Set the target motor position (i.e. turn motor for 3/8 full revolutions)
+    stepTop.runToPosition(); // Run the motor to the target position
+    delay(500);
+    stepTop.moveTo(-5*SPR/16); //Set the target motor position (back to start)
+    stepTop.runToPosition(); // Run the motor to the target position (start)
+    
+    delay(1000);
 }
 
 void botActLoad (int frac){ //run bottom actuator
   Serial.println("Running bottom stepper motor.");
-  stepBot.moveTo(frac/16*SPR); //Set the target motor position (i.e. turn motor for 3/8 full revolutions)
-  stepBot.runToPosition(); // Run the motor to the target position
-  delay(500);
-  stepBot.moveTo(-frac/16*SPR); //Set the target motor position (back to start)
-  stepBot.runToPosition(); // Run the motor to the target position (start)
+    stepBot.moveTo(5*SPR/16); //Set the target motor position (i.e. turn motor for 3/8 full revolutions)
+    stepBot.runToPosition(); // Run the motor to the target position
+    delay(500);
+    stepBot.moveTo(-5*SPR/16); //Set the target motor position (back to start)
+    stepBot.runToPosition(); // Run the motor to the target position (start)
+    
+    delay(1000);
+
+    Serial.println("-------------------------");
 }
 
 void motorUp (void){ //set direction up
@@ -386,9 +388,9 @@ void readThetaAndX(void){ //read theta and thetaDot, translate to x and xDot
   //theta = (float)(theta + ((rpm / 60.0) * 2.0 * 3.14159)* (timefortheta/1000)); // Radians 
   theta = ((float)encoderOverallValue / COUNT_REV) * 2.0 * 3.14159; //Another way to calulate theta 
   
-  changeTheta = theta - prevTheta;
-  prevTheta = theta;
-  
+  //changeTheta = theta - prevTheta;
+  //prevTheta = theta;
+  /*
   thetaDot = ((float)(rpm /60.0) * 2.0 * 3.14159); //Radians Per Second
   if(dir == 1){ //moving up
     x = (float)(x + (changeTheta * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
@@ -398,7 +400,7 @@ void readThetaAndX(void){ //read theta and thetaDot, translate to x and xDot
   }
   xDot = (float)(thetaDot * 1.358); //Radius of the pully goes in the second term 
   encoderValue = 0;
-
+*/
   Serial.print("Theta = ");
       Serial.println(theta);
       Serial.print("ThetaDot = ");
