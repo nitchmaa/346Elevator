@@ -524,19 +524,20 @@ void moveUp (void){ //feedback loop up
     }
 */
 
-    if(x < (topX + margin) && x > (topX - margin)){ //x at top floor within margin of error
-      counter++; //increment counter
-      if(x > 69 && x < 71){ //elevator has stablized, end while loop
+    if(x > (topX - margin)){ //x at top floor within margin of error
+      //if(x > 69 && x < 71){ //elevator has stablized, end while loop
         //Serial.print("Counter: ");
         //Serial.println(counter);
         finished = 1;
-      }
+      //}
     }
+    /*
     else if (x > topX){ //x above floor (overshoot)
       counter = 0; //if not at top floor, reset counter
       motorDown(); //set direction down
       motorSpeed(voltage);
     }
+    */
     else if(x < topX){ //x below floor
       counter = 0; //if not at top floor, reset counter
       motorUp(); //set direction up
