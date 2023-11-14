@@ -131,9 +131,6 @@ void setup() {
 
 void loop() {
   while(1){
-    readThetaAndX();
-    //moveUp();
-
     /*
     switch (state) {
       case 1:
