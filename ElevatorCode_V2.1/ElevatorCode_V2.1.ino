@@ -45,6 +45,8 @@ void rollUp(void);
 
 void updateEncoder(void); //Increment Value for Each pulse from Encoder 
 
+void idle (int idlePos);
+
 /* FOR MOTOR DEADBAND
 #define c_kinetic_pos 72 // static friction 
 #define c_kinetic_neg 87 // make the value positive 
@@ -131,11 +133,13 @@ void setup() {
 
 
 void loop() {
+  int t1, t2;
+  
   while(1){
     moveUp();
-    stopMotor();
-    delay(5000);
-
+    
+    idle(70);
+    
     Serial.println(" ");
     Serial.println(" ");
     Serial.println(" ");
@@ -143,8 +147,7 @@ void loop() {
     Serial.println(" ");
     
     moveDown();
-    stopMotor();
-    delay(5000);
+    idle(0);
     /*
     switch (state) {
       case 1:
@@ -437,9 +440,11 @@ void moveDown (void){ //feedback loop down
   while(finished != 1){ //loop until elevator stablized at destination
     readThetaAndX(); //get current position and speed
 
+/*
     if(xDot < 5){
       voltage = voltage + 10;
     }
+    */
 
     if(x < botX && x > (botX - errorMargin)){ //x at bottom floor within margin of error
       counter++; //increment counter
@@ -511,9 +516,11 @@ void moveUp (void){ //feedback loop up
   while(finished != 1){ //loop until elevator stablized at destination
     readThetaAndX(); //get current position and speed
 
+/*
     if(xDot < 5){
       voltage = voltage + 10;
     }
+*/
 
     if(x < (topX + margin) && x > (topX - margin)){ //x at top floor within margin of error
       counter++; //increment counter
@@ -585,4 +592,37 @@ void updateEncoder(void){
 
 void rollUp(void){
   moveUp();
+}
+
+
+void idle (int idlePos){ //feedback loop up
+  long int t1, t2;
+  int initialVolt = 40;
+
+  Serial.println("Idling.");
+
+  t1 = millis();
+  t2 = millis();
+
+  while((t2 - t1) < 5000){
+    t2=millis();
+
+  voltage = initialVolt; //update global voltage
+
+  motorUp(); //set initial direction to up
+  motorSpeed(initialVolt); //set initial motor speed
+
+  readThetaAndX(); //get current position and speed
+
+    //if(tempX < (idlePos + 1) && tempX > (idlePos - `)){ //x at top floor within margin of error
+    //}
+    if (x > idlePos){ //x above floor
+      motorDown(); //set direction down
+      motorSpeed(voltage);
+    }
+    else if(x < idlePos){ //x below floor
+      motorUp(); //set direction up
+      motorSpeed(voltage);
+    }
+  }
 }
