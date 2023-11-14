@@ -114,8 +114,7 @@ int botX = 0; //x of bottom floor
 float errorMargin = 0.25; //margin of error
 int xClose = 8; //to determine whether wanted - actual difference is small or large
 
-int dir = 1; //1 up, 2 down
-float changeTheta;
+float margin = 5;
 
 volatile long voltage; //store current voltage being sent to motor
 
@@ -126,12 +125,17 @@ void setup() {
   digitalWrite(LED_BUILTIN, LOW);
   
   setUp(); //function to set pins
-  rollUp();
+  //rollUp();
 }
 
 
 void loop() {
   while(1){
+    moveUp();
+    delay(5000);
+    moveDown();
+    delay(5000);
+    /*
     switch (state) {
       case 1:
         if(substate == 'A'){
@@ -197,6 +201,7 @@ void loop() {
         stopMotor();
         break;
     }
+    */
   }
 }
 
@@ -281,21 +286,18 @@ void motorDown (void){ //set direction down
   digitalWrite(MP1, LOW);
   digitalWrite(MP2, HIGH);
   Serial.println("Direction: DOWN");
-  dir = 2;
 }
 
 void motorUp (void){ //set direction up
   digitalWrite(MP1, HIGH);
   digitalWrite(MP2, LOW);
   Serial.println("Direction: UP");
-  dir = 1;
 }
 
 void stopMotor (void){ //stops elevator
   digitalWrite(MP1, LOW);
   digitalWrite(MP2, LOW);
   Serial.println("Motor stopped.");
-  dir = 0;
 }
 
 void motorSpeed(int ein){ //set motor speed; receives input voltage
@@ -369,7 +371,6 @@ void readThetaAndX(void){ //read theta and thetaDot, translate to x and xDot
     int timefortheta = currentMillis - previousMillis;
     previousMillis = currentMillis;
   
-
    rpm = (float)(encoderValue * 600.0 / COUNT_REV);
    //theta = (float)(theta + ((rpm / 60.0) * 2.0 * 3.14159)* (timefortheta/1000)); // Radians 
    theta = (((float)encoderOverallValue / COUNT_REV ) * 2 * 3.14159);
@@ -378,7 +379,7 @@ void readThetaAndX(void){ //read theta and thetaDot, translate to x and xDot
    xDot = ((float)thetaDot * 1.358); //Radius of the pully goes in the second term 
 
   if(rpm != 0){
-  
+    /*
     Serial.print("Pulses: ");
     Serial.print(encoderValue);
     Serial.print('\t');
@@ -393,14 +394,14 @@ void readThetaAndX(void){ //read theta and thetaDot, translate to x and xDot
     Serial.print("Theta Dot: ");
     Serial.print(thetaDot);
     Serial.println(" Rad/sec");
-    Serial.print('\t');
+    Serial.print('\t');*/
     Serial.print("X ");
     Serial.print(x);
     Serial.println(" cm");
-    Serial.print('\t');
+    Serial.print('\t');/*
     Serial.print("XDot ");
     Serial.print(xDot);
-    Serial.println(" cm/s");
+    Serial.println(" cm/s");*/
   }
   
   encoderValue = 0;
@@ -432,7 +433,7 @@ void moveDown (void){ //feedback loop down
 
     if(x < botX && x > (botX - errorMargin)){ //x at bottom floor within margin of error
       counter++; //increment counter
-      if(counter == 200){ //elevator has stablized, end while loop
+      if(counter > 10){ //elevator has stablized, end while loop
         finished = 1;
       }
     }
@@ -441,7 +442,7 @@ void moveDown (void){ //feedback loop down
       motorDown(); //set direction down
       dx = x - botX; //find difference between actual x and wanted x
       if(dx <= xClose){ //small difference, set speed proportional to difference
-        voltage = 20;
+        voltage = 30;
         motorSpeed(voltage);
       }
       else{ //large difference, set constant speed
@@ -452,7 +453,7 @@ void moveDown (void){ //feedback loop down
     else if(x < (botX - errorMargin)){ //x below floor (overshot)
       counter = 0; //if not at bottom floor, reset counter
       motorUp(); //set direction up
-      voltage = 20;
+      voltage = 30;
       motorSpeed(voltage);
     }/*
     else if (x > botX){ //x above floor
@@ -502,9 +503,9 @@ void moveUp (void){ //feedback loop up
       voltage = voltage + 10;
     }
 
-    if(x < topX && x > (topX - errorMargin)){ //x at top floor within margin of error
+    if(x < (topX + margin) && x > (topX - margin)){ //x at top floor within margin of error
       counter++; //increment counter
-      if(counter == 200){ //elevator has stablized, end while loop
+      if(counter > 10){ //elevator has stablized, end while loop
         Serial.print("Counter: ");
         Serial.println(counter);
         finished = 1;
@@ -513,21 +514,23 @@ void moveUp (void){ //feedback loop up
     else if (x > topX){ //x above floor (overshoot)
       counter = 0; //if not at top floor, reset counter
       motorDown(); //set direction down
-      voltage = 20;
+      voltage = 30;
       motorSpeed(voltage);
     }
-    else if(x < (topX - errorMargin)){ //x below floor
+    else if(x < topX){ //x below floor
       counter = 0; //if not at top floor, reset counter
       motorUp(); //set direction up
+      /*
       dx = topX - x; //find difference between wanted x and actual x
       if(dx <= xClose){ //small difference, set speed proportional to difference
-        voltage = 20;
+        voltage = 30;
         motorSpeed(voltage);
       }
       else{ //large difference, set constant speed
         voltage = initialVolt;
         motorSpeed(voltage);
       }
+      */
     }
     /*
     else if (x > topX){ //x above floor (overshoot)
@@ -550,8 +553,9 @@ void moveUp (void){ //feedback loop up
         motorSpeed(volt);
       }
     }*/
-    Serial.print("Current motor voltage: ");
-    Serial.println(voltage);
+    //Serial.print("Current motor voltage: ");
+    //Serial.println(voltage);
+    Serial.print("EncoderValue: ");
     Serial.println(encoderValue);
   }
 }
