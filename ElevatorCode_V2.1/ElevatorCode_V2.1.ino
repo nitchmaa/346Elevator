@@ -88,6 +88,7 @@ NewPing sonarBot(trigBot, echoBot, MAX_DISTANCE); // NewPing setup of pins and m
 //DEFINE ROTARY ENCODER VARIABLES
 #define COUNT_REV 115 //Rodery encoder output pulse per rotation (Need to change depemnding on encoder)
 #define ENCODER_IN 3 //Encoder output to Aurdino Interrupt pin
+#define ENCODER_IN2 2
 
  volatile long encoderValue = 0; //Pulse count from encoder 
  int interval = 100; //1 second interval measuments 
@@ -99,8 +100,7 @@ NewPing sonarBot(trigBot, echoBot, MAX_DISTANCE); // NewPing setup of pins and m
  float x = 0;
  float xDot = 0;
  int encoderOverallValue;
-
- int prevTheta;
+ int b;
 
 
 //DEFINE GENERAL USE VARIABLES
@@ -236,6 +236,7 @@ void setUp(void){ //setup function
 
   //ROTARY ENCODER
   pinMode (ENCODER_IN, INPUT_PULLUP);
+  pinMode (ENCODER_IN2, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(ENCODER_IN), updateEncoder, RISING); // Interupt to find X and X dot
   previousMillis = millis();
 }
@@ -362,39 +363,50 @@ int proportionSpeed(int deltaX){ //find volt to reduce speed proportional to dis
 }
 
 void readThetaAndX(void){ //read theta and thetaDot, translate to x and xDot
-   currentMillis = millis();
+  currentMillis = millis();
   
   if (currentMillis - previousMillis > interval){
     int timefortheta = currentMillis - previousMillis;
     previousMillis = currentMillis;
   
-  rpm = (float)(encoderValue * 600.0 / COUNT_REV);
-  //theta = (float)(theta + ((rpm / 60.0) * 2.0 * 3.14159)* (timefortheta/1000)); // Radians 
-  theta = ((float)encoderOverallValue / COUNT_REV) * 2.0 * 3.14159; //Another way to calulate theta 
+
+   rpm = (float)(encoderValue * 600.0 / COUNT_REV);
+   //theta = (float)(theta + ((rpm / 60.0) * 2.0 * 3.14159)* (timefortheta/1000)); // Radians 
+   theta = (((float)encoderOverallValue / COUNT_REV ) * 2 * 3.14159);
+   thetaDot = (float)((rpm /60.0) * 2.0 * 3.14159); //Radians Per Second
+   x = ((float)(theta * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
+   xDot = ((float)thetaDot * 1.358); //Radius of the pully goes in the second term 
+
+  if(rpm != 0){
   
-  changeTheta = theta - prevTheta;
-  prevTheta = theta;
+    Serial.print("Pulses: ");
+    Serial.print(encoderValue);
+    Serial.print('\t');
+    Serial.print("Speed: ");
+    Serial.print(rpm);
+    Serial.println(" RPM");
+    Serial.print('\t');
+    Serial.print("Theta: ");
+    Serial.print(theta);
+    Serial.println(" Rad");
+    Serial.print('\t');
+    Serial.print("Theta Dot: ");
+    Serial.print(thetaDot);
+    Serial.println(" Rad/sec");
+    Serial.print('\t');
+    Serial.print("X ");
+    Serial.print(x);
+    Serial.println(" cm");
+    Serial.print('\t');
+    Serial.print("XDot ");
+    Serial.print(xDot);
+    Serial.println(" cm/s");
+  }
   
-  thetaDot = ((float)(rpm /60.0) * 2.0 * 3.14159); //Radians Per Second
-  if(dir == 1){ //moving up
-    x = (float)(x + (changeTheta * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
-  }
-  else if (dir == 2){ //moving down
-    x = (float)(x - (changeTheta * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
-  }
-  xDot = (float)(thetaDot * 1.358); //Radius of the pully goes in the second term 
   encoderValue = 0;
 
-  Serial.print("Theta = ");
-      Serial.println(theta);
-      Serial.print("ThetaDot = ");
-      Serial.println(thetaDot);
-      Serial.print("x = ");
-      Serial.println(x);
-      Serial.print("xDot = ");
-      Serial.println(xDot);
-      Serial.println("-------------------------");
   }
+  
 }
 
 void moveDown (void){ //feedback loop down
@@ -546,8 +558,14 @@ void moveUp (void){ //feedback loop up
 
 
 void updateEncoder(void){
-  encoderValue ++;
-  encoderOverallValue ++;
+ b = digitalRead(ENCODER_IN2);
+  if (b == 0){
+      encoderValue --;
+      encoderOverallValue --;
+  }else {
+      encoderValue ++;
+      encoderOverallValue ++;
+  }
 }
 
 void rollUp(void){
