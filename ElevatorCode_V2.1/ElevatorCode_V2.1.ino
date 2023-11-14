@@ -114,9 +114,10 @@ int botX = 0; //x of bottom floor
 float errorMargin = 0.25; //margin of error
 int xClose = 8; //to determine whether wanted - actual difference is small or large
 
-float margin = 5;
+float margin = 0.25;
 
 volatile long voltage; //store current voltage being sent to motor
+
 
 void setup() {
   Serial.begin(9600); // Opens serial port and sets the data rate to 9600 bits-per-second
@@ -133,8 +134,8 @@ void loop() {
   while(1){
     moveUp();
     delay(5000);
-    moveDown();
-    delay(5000);
+    //moveDown();
+    //delay(5000);
     /*
     switch (state) {
       case 1:
@@ -505,9 +506,9 @@ void moveUp (void){ //feedback loop up
 
     if(x < (topX + margin) && x > (topX - margin)){ //x at top floor within margin of error
       counter++; //increment counter
-      if(counter > 10){ //elevator has stablized, end while loop
-        Serial.print("Counter: ");
-        Serial.println(counter);
+      if(x > 69 && x < 71){ //elevator has stablized, end while loop
+        //Serial.print("Counter: ");
+        //Serial.println(counter);
         finished = 1;
       }
     }
