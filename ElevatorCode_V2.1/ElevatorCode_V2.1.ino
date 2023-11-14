@@ -131,7 +131,8 @@ void setup() {
 
 void loop() {
   while(1){
-    moveUp();
+    readThetaAndX();
+    //moveUp();
 
     /*
     switch (state) {
@@ -472,21 +473,23 @@ void moveUp (void){ //feedback loop up
     if(x < topX && x > (topX - errorMargin)){ //x at top floor within margin of error
       counter++; //increment counter
       if(counter == 200){ //elevator has stablized, end while loop
+        Serial.println("Counter: ");
+        Serial.println(counter);
         finished = 1;
       }
     }
     else if (x > topX){ //x above floor (overshoot)
       counter = 0; //if not at top floor, reset counter
       motorDown(); //set direction down
-      voltage = 25;
+      voltage = 20;
       motorSpeed(voltage);
     }
-    else if(x < (botX - errorMargin)){ //x below floor
+    else if(x < (topX - errorMargin)){ //x below floor
       counter = 0; //if not at top floor, reset counter
       motorUp(); //set direction up
       dx = topX - x; //find difference between wanted x and actual x
       if(dx <= xClose){ //small difference, set speed proportional to difference
-        voltage = 25;
+        voltage = 20;
         motorSpeed(voltage);
       }
       else{ //large difference, set constant speed
@@ -516,7 +519,7 @@ void moveUp (void){ //feedback loop up
       }
     }*/
     Serial.print("Current motor voltage: ");
-    Serial.println(volt);
+    Serial.println(voltage);
     Serial.println(encoderValue);
   }
 }
