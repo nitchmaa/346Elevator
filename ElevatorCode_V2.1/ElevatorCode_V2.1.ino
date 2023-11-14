@@ -128,28 +128,15 @@ void setup() {
   digitalWrite(LED_BUILTIN, LOW);
   
   setUp(); //function to set pins
-  
-  rollUp();
+  moveUp();
+  //rollUp();
 }
 
 
 void loop() {
   while(1){
-    moveUp();
+    idle();
 
-    /*
-    moveUp();
-    
-    idle(70);
-    
-    Serial.println(" ");
-    Serial.println(" ");
-    Serial.println(" ");
-    Serial.println(" ");
-    Serial.println(" ");
-    
-    moveDown();
-    idle(0);
     /*
     switch (state) {
       case 1:
@@ -502,82 +489,36 @@ void moveDown (void){ //feedback loop down
 
 
 void moveUp (void){ //feedback loop up
-  int initialVolt = 30;
+  int initialVolt = 25;
   int counter = 0;
   int finished = 0;
   int volt;
   float dx;
+  float kp = 3;
 
   Serial.println("Feedback loop, up.");
 
   voltage = initialVolt; //update global voltage
 
-  motorUp(); //set initial direction to up
-  motorSpeed(initialVolt); //set initial motor speed
-
   while(finished != 1){ //loop until elevator stablized at destination
     readThetaAndX(); //get current position and speed
 
-/*
-    if(xDot < 5){
-      voltage = voltage + 10;
-    }
-*/
-
     if(x > (topX - margin)){ //x at top floor within margin of error
-      //if(x > 69 && x < 71){ //elevator has stablized, end while loop
-        //Serial.print("Counter: ");
-        //Serial.println(counter);
+        motorSpeed(0);
+        voltage = 0;
         finished = 1;
-      //}
     }
-    /*
-    else if (x > topX){ //x above floor (overshoot)
-      counter = 0; //if not at top floor, reset counter
-      motorDown(); //set direction down
+    else if(x < topX){ //x below floor
+      if(xDot < 1){
+        voltage = voltage + 1;
+        if(voltage > 255){
+          voltage = 255;
+        }
+      }
+      
+      motorUp(); //set direction up
       motorSpeed(voltage);
     }
-    */
-    else if(x < topX){ //x below floor
-      counter = 0; //if not at top floor, reset counter
-      motorUp(); //set direction up
-      /*
-      dx = topX - x; //find difference between wanted x and actual x
-      if(dx <= xClose){ //small difference, set speed proportional to difference
-        voltage = 30;
-        motorSpeed(voltage);
-      }
-      else{ //large difference, set constant speed
-        voltage = initialVolt;
-        motorSpeed(voltage);
-      }
-      */
-    }
-    /*
-    else if (x > topX){ //x above floor (overshoot)
-      counter = 0; //if not at top floor, reset counter
-      motorDown(); //set direction down
-      dx = x - topX; //find difference between actual x and wanted x
-      volt = proportionSpeed(dx); //assume small difference, set speed proportional to difference
-      motorSpeed(volt);
-    }
-    else if(x < (botX - errorMargin)){ //x below floor
-      counter = 0; //if not at top floor, reset counter
-      motorUp(); //set direction up
-      dx = topX - x; //find difference between wanted x and actual x
-      if(dx <= xClose){ //small difference, set speed proportional to difference
-        volt = proportionSpeed(dx);
-        motorSpeed(volt);
-      }
-      else{ //large difference, set constant speed
-        volt = constantSpeed();
-        motorSpeed(volt);
-      }
-    }*/
-    //Serial.print("Current motor voltage: ");
-    //Serial.println(voltage);
-    Serial.print("EncoderValue: ");
-    Serial.println(encoderValue);
   }
 }
 
@@ -600,34 +541,36 @@ void rollUp(void){
 }
 
 
-void idle (int idlePos){ //feedback loop up
-  long int t1, t2;
-  int initialVolt = 50;
+void idle (void){ //idle
+  int initialVolt = 30;
+  int counter = 0;
+  int finished = 0;
+  int volt;
+  float dx;
+  float kp = 3;
 
   Serial.println("Idling.");
 
-  t1 = millis();
-  t2 = millis();
-
-  while((t2 - t1) < 5000){
-    t2=millis();
-
   voltage = initialVolt; //update global voltage
 
-  motorUp(); //set initial direction to up
-  motorSpeed(initialVolt); //set initial motor speed
+  while(finished != 1){ //loop until elevator stablized at destination
+    readThetaAndX(); //get current position and speed
 
-  readThetaAndX(); //get current position and speed
-
-    //if(tempX < (idlePos + 1) && tempX > (idlePos - `)){ //x at top floor within margin of error
-    //}
-    if (x > idlePos){ //x above floor
-      motorDown(); //set direction down
-      motorSpeed(voltage);
+    if(x > (topX - margin)){ //x at top floor within margin of error
+        motorSpeed(0);
+        voltage = 0;
     }
-    else if(x < idlePos){ //x below floor
+    else if(x < topX){ //x below floor
       motorUp(); //set direction up
-      motorSpeed(voltage);
+      if(xDot < 70){
+        volt = initialVolt + kp*(topX - x);
+        if(volt > 255){
+          volt = 255;
+        }
+        motorSpeed(volt);
+      
+        voltage = volt;
+      }
     }
   }
 }
