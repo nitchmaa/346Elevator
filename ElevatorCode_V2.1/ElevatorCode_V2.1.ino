@@ -133,9 +133,18 @@ void setup() {
 void loop() {
   while(1){
     moveUp();
+    stopMotor();
     delay(5000);
-    //moveDown();
-    //delay(5000);
+
+    Serial.println(" ");
+    Serial.println(" ");
+    Serial.println(" ");
+    Serial.println(" ");
+    Serial.println(" ");
+    
+    moveDown();
+    stopMotor();
+    delay(5000);
     /*
     switch (state) {
       case 1:
@@ -434,13 +443,16 @@ void moveDown (void){ //feedback loop down
 
     if(x < botX && x > (botX - errorMargin)){ //x at bottom floor within margin of error
       counter++; //increment counter
-      if(counter > 10){ //elevator has stablized, end while loop
+      if(x > -1 && x < 1){ //elevator has stablized, end while loop
+        //Serial.print("Counter: ");
+        //Serial.println(counter);
         finished = 1;
       }
     }
     else if (x > botX){ //x above floor
       counter = 0; //if not at bottom floor, reset counter
       motorDown(); //set direction down
+      /*
       dx = x - botX; //find difference between actual x and wanted x
       if(dx <= xClose){ //small difference, set speed proportional to difference
         voltage = 30;
@@ -449,12 +461,11 @@ void moveDown (void){ //feedback loop down
       else{ //large difference, set constant speed
         voltage = initialVolt;
         motorSpeed(voltage);
-      }
+      }*/
     }
     else if(x < (botX - errorMargin)){ //x below floor (overshot)
       counter = 0; //if not at bottom floor, reset counter
       motorUp(); //set direction up
-      voltage = 30;
       motorSpeed(voltage);
     }/*
     else if (x > botX){ //x above floor
@@ -515,7 +526,6 @@ void moveUp (void){ //feedback loop up
     else if (x > topX){ //x above floor (overshoot)
       counter = 0; //if not at top floor, reset counter
       motorDown(); //set direction down
-      voltage = 30;
       motorSpeed(voltage);
     }
     else if(x < topX){ //x below floor
