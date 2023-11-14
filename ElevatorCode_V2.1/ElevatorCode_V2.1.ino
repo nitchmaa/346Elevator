@@ -128,14 +128,16 @@ void setup() {
   digitalWrite(LED_BUILTIN, LOW);
   
   setUp(); //function to set pins
-  //rollUp();
+  
+  rollUp();
 }
 
 
 void loop() {
-  int t1, t2;
-  
   while(1){
+    stopMotor();
+
+    /*
     moveUp();
     
     idle(70);
@@ -591,13 +593,15 @@ void updateEncoder(void){
 }
 
 void rollUp(void){
+  
   moveUp();
+  
 }
 
 
 void idle (int idlePos){ //feedback loop up
   long int t1, t2;
-  int initialVolt = 40;
+  int initialVolt = 50;
 
   Serial.println("Idling.");
 
