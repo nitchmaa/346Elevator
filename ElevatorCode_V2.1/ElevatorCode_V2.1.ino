@@ -131,7 +131,6 @@ void setup() {
 
 void loop() {
   while(1){
-    /*
     switch (state) {
       case 1:
         if(substate == 'A'){
@@ -196,7 +195,7 @@ void loop() {
         digitalWrite(LED_BUILTIN, HIGH);
         stopMotor();
         break;
-    }*/
+    }
   }
 }
 
@@ -262,17 +261,17 @@ int objectDetect(void){ //detect object at platforms; returns 0 if no object, 1 
 
 void topActLoad (void){ //run top actuator
   Serial.println("Running top stepper motor.");
-  stepTop.moveTo(3/8*SPR); //Set the target motor position (i.e. turn motor for 3/8 full revolutions)
+  stepTop.moveTo(5/16*SPR); //Set the target motor position (i.e. turn motor for 3/8 full revolutions)
   stepTop.runToPosition(); // Run the motor to the target position
-  stepTop.moveTo(-3/8*SPR); //Set the target motor position (back to start)
+  stepTop.moveTo(-5/16*SPR); //Set the target motor position (back to start)
   stepTop.runToPosition(); // Run the motor to the target position (start)
 }
 
 void botActLoad (void){ //run bottom actuator
   Serial.println("Running bottom stepper motor.");
-  stepBot.moveTo(3/8*SPR); //Set the target motor position (i.e. turn motor for 3/8 full revolutions)
+  stepBot.moveTo(5/16*SPR); //Set the target motor position (i.e. turn motor for 3/8 full revolutions)
   stepBot.runToPosition(); // Run the motor to the target position
-  stepBot.moveTo(-3/8*SPR); //Set the target motor position (back to start)
+  stepBot.moveTo(-5/16*SPR); //Set the target motor position (back to start)
   stepBot.runToPosition(); // Run the motor to the target position (start)
 }
 
@@ -398,7 +397,7 @@ void readThetaAndX(void){ //read theta and thetaDot, translate to x and xDot
 }
 
 void moveDown (void){ //feedback loop down
-  int initialVolt = 5;
+  int initialVolt = 30;
   int counter = 0;
   int finished = 0;
   int volt;
@@ -414,12 +413,35 @@ void moveDown (void){ //feedback loop down
   while(finished != 1){ //loop until elevator stablized at destination
     readThetaAndX(); //get current position and speed
 
+    if(xDot < 5){
+      voltage = voltage + 10;
+    }
+
     if(x < botX && x > (botX - errorMargin)){ //x at bottom floor within margin of error
       counter++; //increment counter
       if(counter == 200){ //elevator has stablized, end while loop
         finished = 1;
       }
     }
+    else if (x > botX){ //x above floor
+      counter = 0; //if not at bottom floor, reset counter
+      motorDown(); //set direction down
+      dx = x - botX; //find difference between actual x and wanted x
+      if(dx <= xClose){ //small difference, set speed proportional to difference
+        voltage = 20;
+        motorSpeed(voltage);
+      }
+      else{ //large difference, set constant speed
+        voltage = initialVolt;
+        motorSpeed(voltage);
+      }
+    }
+    else if(x < (botX - errorMargin)){ //x below floor (overshot)
+      counter = 0; //if not at bottom floor, reset counter
+      motorUp(); //set direction up
+      voltage = 20;
+      motorSpeed(voltage);
+    }/*
     else if (x > botX){ //x above floor
       counter = 0; //if not at bottom floor, reset counter
       motorDown(); //set direction down
@@ -439,9 +461,9 @@ void moveDown (void){ //feedback loop down
       dx = botX - x; //find difference between wanted x and actual x
       volt = proportionSpeed(dx); //assume small difference, set speed proportional to difference
       motorSpeed(volt);
-    }
+    }*/
     Serial.print("Current motor voltage: ");
-    Serial.println(volt);
+    Serial.println(voltage);
   }
 }
 
