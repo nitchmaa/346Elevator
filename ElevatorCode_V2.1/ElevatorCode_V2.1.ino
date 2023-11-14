@@ -1,4 +1,3 @@
-//charles
 // ELEVATOR CODE
 // VERSION 2.1
 // LAST REVISED BY: MB
@@ -42,7 +41,7 @@ void readThetaAndX(void); //read theta and thetaDot
 void moveDown (void); //feedback loop down
 void moveUp (void); //feedback loop up
 
-void holdPos(void);
+void rollUp(void);
 
 void updateEncoder(void); //Increment Value for Each pulse from Encoder 
 
@@ -127,6 +126,7 @@ void setup() {
   digitalWrite(LED_BUILTIN, LOW);
   
   setUp(); //function to set pins
+  rollUp();
 }
 
 
@@ -493,7 +493,7 @@ void moveUp (void){ //feedback loop up
     if(x < topX && x > (topX - errorMargin)){ //x at top floor within margin of error
       counter++; //increment counter
       if(counter == 200){ //elevator has stablized, end while loop
-        Serial.println("Counter: ");
+        Serial.print("Counter: ");
         Serial.println(counter);
         finished = 1;
       }
@@ -548,4 +548,8 @@ void moveUp (void){ //feedback loop up
 void updateEncoder(void){
   encoderValue ++;
   encoderOverallValue ++;
+}
+
+void rollUp(void){
+  moveUp();
 }
