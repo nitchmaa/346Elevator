@@ -65,7 +65,7 @@ void idle (int idlePos);
 //DEFINE STEPPER MOTOR VARIABLES
 #define TS1  22 // IN1 on the ULN2003, top
 #define TS2  23 // IN2 on the ULN2003, top
-#define TS3  24 // IN3 on the ULN2003, top
+#define TS3  24 // IN3 on the U LN2003, top
 #define TS4  25 // IN4 on the ULN2003, top
 #define BS1  28 // IN1 on the ULN2003, bot
 #define BS2  29 // IN2 on the ULN2003, bot
@@ -517,12 +517,12 @@ void moveUp (void){ //feedback loop up
   while(finished != 1){ //loop until elevator stablized at destination
     readThetaAndX(); //get current position and speed
 
-    if(x > (69)){ //x at top floor within margin of error
+    if(x > (68)){ //x at top floor within margin of error
         voltage = voltage/3.0;
         finished = 1;
         Serial.print("moveup function");
     }
-    else if(x < 69){ //x below floor
+    else if(x < 68){ //x below floor
       if(xDot < 1){
         voltage = voltage + 1;
         if(voltage > 255){
