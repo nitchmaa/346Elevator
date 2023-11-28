@@ -15,6 +15,7 @@
 #include "definePins.h"
 #include "sonar_actuators.h"
 #include "dcMotor_encoder.h"
+#include <PID_v1.h>
 
 
 //FUNCTION PROTOTYPES
@@ -34,7 +35,7 @@ int topX = 70; //x of top floor
 int botX = 0; //x of bottom floor
 float errorMargin = 0.25; //margin of error
 int xClose = 8; //to determine whether wanted - actual difference is small or large
-volatile long voltage; //store current voltage being sent to motor
+//volatile long voltage; //store current voltage being sent to motor
 
 
 
@@ -43,8 +44,18 @@ volatile long voltage; //store current voltage being sent to motor
  float theta =0;
  float thetaDot = 0;
  float x = 0;
- float xDot = 0;
+ double xDot = 0;
   long previousMillis = 0;
+
+
+//PID
+double Kp = 20, Ki = 5, Kd = 1;
+double desiredSpeed = 5, voltage = 100;
+//setpoint = desired speed (50)
+//error = actual speed - desired speed (50)
+//output = voltage
+
+PID constPID(&xDot, &voltage, &desiredSpeed, Kp, Ki, Kd, DIRECT);
 
 
  //NEW FUNCTION CALL:
@@ -60,20 +71,45 @@ void setup() {
   digitalWrite(LED_BUILTIN, LOW);
   
   setUp(); //function to set pins
-  topActLoad(0.1); //pre-loop run of actuators
-  botActLoad(0.1);
+  //topActLoad(0.1); //pre-loop run of actuators
+  //botActLoad(0.1);
   
   //moveUp();
+  constPID.SetMode(AUTOMATIC);
 }
 
 
 void loop() {
   while(1){
+    
+
+    
+    int dir = 1;
+    motorUp();
     while(1){
-      readThetaAndX(&theta, &thetaDot, &x, &xDot, &previousMillis);
-      Serial.println("MAIN X: ");
-      Serial.print(x);
+      if(dir == 1){
+        desiredSpeed = 5;
+        //motorUp();
+        readThetaAndX(&theta, &thetaDot, &x, &xDot, &previousMillis);
+        constPID.Compute();
+        motorSpeed(voltage);
+        Serial.println("After PID");
+        
+        //if(x >= 50) dir = 2;
+      }
+      else if(dir == 2){
+        desiredSpeed = -5;
+        motorDown();
+        readThetaAndX(&theta, &thetaDot, &x, &xDot, &previousMillis);
+        constPID.Compute();
+        motorSpeed(voltage);
+
+        if(x <= 10) dir = 1;
+      }
     }
+
+
+    
     switch (state) {
       case 1:
         if(substate == 'A'){
