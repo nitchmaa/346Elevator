@@ -41,7 +41,7 @@ void motorSpeed(int ein){ //set motor speed; receives input voltage
 }
 
 
-void readThetaAndX(float *thetaPTR, float *thetaDotPTR, float *xPTR, float *xDotPTR, long *previousMilllisPTR){ //read theta and thetaDot, translate to x and xDot
+void readThetaAndX(float *thetaPTR, float *thetaDotPTR, float *xPTR, double *xDotPTR, long *previousMilllisPTR){ //read theta and thetaDot, translate to x and xDot
   float rpm = 0;
   currentMillis = millis();
   
@@ -71,15 +71,15 @@ void readThetaAndX(float *thetaPTR, float *thetaDotPTR, float *xPTR, float *xDot
     Serial.print('\t');
     Serial.print("Theta Dot: ");
     Serial.print(thetaDot);
-    Serial.println(" Rad/sec");
-    Serial.print('\t');*/
+    Serial.println(" Rad/sec");*/
+    Serial.print('\t');
     Serial.print("X ");
     Serial.print(*xPTR);
     Serial.println(" cm");
-    Serial.print('\t');/*
+    Serial.print('\t');
     Serial.print("XDot ");
-    Serial.print(xDot);
-    Serial.println(" cm/s");*/
+    Serial.print(*xDotPTR);
+    Serial.println(" cm/s");
   //}
   
   encoderValue = 0;
