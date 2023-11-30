@@ -2,7 +2,11 @@
 #include <NewPing.h>
 #include "step.h"
 #include "ObjectDetection.h"
+#include <Encoder.h>
+#include "motorpwm.h"
 
+Encoder encoder(2,3);
+long position = -999;
 int state = 1;
 
 void setup() {
@@ -13,6 +17,8 @@ void loop() {
   switch(state){
     case 1:
       Serial.println("State 1");
+      // runMotorUp();
+      // Serial.println(encoder.read());
       // idle goes here
       if(objectDetect() == 0){
         break;
