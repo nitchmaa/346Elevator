@@ -5,7 +5,8 @@
 #define MP1 10
 #define MP2 12
 #define MPEN 11
-int pwm=255;
+
+int pwm = 255;
 // pinMode(MP1, OUTPUT); //Declaring the pin modes, obviously they're outputs
 // pinMode(MP2, OUTPUT);
 // pinMode(MPEN, OUTPUT);
@@ -21,7 +22,7 @@ void runMotorUp(){
   pinMode(MPEN, OUTPUT);
   digitalWrite(MP1, LOW);
   digitalWrite(MP2, HIGH);
-  analogWrite(MPEN,pwm);
+  //analogWrite(MPEN,pwm);
 }
  
 void TurnOFFA(){
