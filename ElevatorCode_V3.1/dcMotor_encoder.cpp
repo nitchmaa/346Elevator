@@ -63,15 +63,15 @@ void readThetaAndX(float *thetaPTR, float *thetaDotPTR, float *xPTR, double *xDo
     Serial.print('\t');
     Serial.print("Speed: ");
     Serial.print(rpm);
-    Serial.println(" RPM");
+    Serial.println(" RPM");*/
     Serial.print('\t');
     Serial.print("Theta: ");
-    Serial.print(theta);
+    Serial.print(*thetaPTR);
     Serial.println(" Rad");
     Serial.print('\t');
     Serial.print("Theta Dot: ");
-    Serial.print(thetaDot);
-    Serial.println(" Rad/sec");*/
+    Serial.print(*thetaDotPTR);
+    Serial.println(" Rad/sec");
     Serial.print('\t');
     Serial.print("X ");
     Serial.print(*xPTR);

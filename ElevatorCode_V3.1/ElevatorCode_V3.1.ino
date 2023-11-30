@@ -16,6 +16,7 @@
 #include "sonar_actuators.h"
 #include "dcMotor_encoder.h"
 #include <PID_v1.h>
+#include <Encoder.h>
 
 
 //FUNCTION PROTOTYPES
@@ -25,6 +26,7 @@ int proportionSpeed(int deltaX); //find volt to reduce speed proportional to dis
 void moveDown (void); //feedback loop down
 void moveUp (void); //feedback loop up
 void idle (void);
+void readEncoder(void);
 
 //DEFINE GENERAL USE VARIABLES
 int state = 1;
@@ -49,13 +51,27 @@ int xClose = 8; //to determine whether wanted - actual difference is small or la
 
 
 //PID
-double Kp = 20, Ki = 5, Kd = 1;
-double desiredSpeed = 5, voltage = 100;
+double kp = 2.5, ki = 0.25, kd = 2;
+double desiredSpeed;
+long voltage = 100;
+double totalError = 0, error = 0, eSignal = 0;
 //setpoint = desired speed (50)
 //error = actual speed - desired speed (50)
 //output = voltage
 
-PID constPID(&xDot, &voltage, &desiredSpeed, Kp, Ki, Kd, DIRECT);
+//PID constPID(&xDot, &voltage, &desiredSpeed, kp, ki, kd, DIRECT);
+Encoder myEnc(2,3);
+long pos = -999;
+long currTime = millis();
+long prevTime = currTime;
+float deltaTime = 0;
+float deltaTimeSec = 0;
+float deltaRad = 0;
+float prevRad = 0;
+
+double deltaError = 0;
+double prevError = 0;
+double errorDot = 0;
 
 
  //NEW FUNCTION CALL:
@@ -71,37 +87,75 @@ void setup() {
   digitalWrite(LED_BUILTIN, LOW);
   
   setUp(); //function to set pins
+  
+  myEnc.write(0);
+    currTime = millis();
+    prevTime = currTime;
+    deltaTime = currTime - prevTime;
+  
   //topActLoad(0.1); //pre-loop run of actuators
   //botActLoad(0.1);
   
   //moveUp();
-  constPID.SetMode(AUTOMATIC);
+  //constPID.SetMode(AUTOMATIC);
 }
 
 
 void loop() {
-  while(1){
-    
-
-    
+   
     int dir = 1;
+    double temp;
+    
     motorUp();
+    voltage = 250;
+    motorSpeed(voltage);
+    delay(1000);
+    
     while(1){
       if(dir == 1){
-        desiredSpeed = 5;
-        //motorUp();
-        readThetaAndX(&theta, &thetaDot, &x, &xDot, &previousMillis);
-        constPID.Compute();
+        desiredSpeed = 50;
+        
+        readEncoder();
+        
+                
+        error = desiredSpeed - xDot;
+        Serial.print("Error: ");
+        Serial.print(error);
+        Serial.println(" cm/s");
+
+        totalError = totalError + error;
+        Serial.print("Total Error: ");
+        Serial.println(totalError);
+
+        deltaError = error - prevError;
+        prevError = error;
+        errorDot = deltaError / deltaTime;
+        Serial.print("ErrorDot: ");
+        Serial.println(errorDot);
+        
+        eSignal = kp*error + ki*totalError + kd*errorDot;
+        Serial.print("eSignal: ");
+        Serial.println(eSignal);
+
+        voltage = voltage + eSignal;
+        if(voltage > 250) voltage = 250;
+        else if (voltage < 50) voltage = 50;
+        //Serial.print("Voltage: ");
+        //Serial.print(voltage);
+        //Serial.println(" V");
+        
+        //constPID.Compute();
         motorSpeed(voltage);
-        Serial.println("After PID");
+        Serial.println("------------------------------------");
         
         //if(x >= 50) dir = 2;
       }
       else if(dir == 2){
         desiredSpeed = -5;
         motorDown();
-        readThetaAndX(&theta, &thetaDot, &x, &xDot, &previousMillis);
-        constPID.Compute();
+        readEncoder();
+        //readThetaAndX(&theta, &thetaDot, &x, &xDot, &previousMillis);
+        //constPID.Compute();
         motorSpeed(voltage);
 
         if(x <= 10) dir = 1;
@@ -182,7 +236,6 @@ void loop() {
         break;
     }
     
-  }
 }
 
 
@@ -216,9 +269,9 @@ void setUp(void){ //setup function
   pinMode(echoBot,INPUT);
 
   //ROTARY ENCODER
-  pinMode (ENCODER_IN, INPUT_PULLUP);
-  pinMode (ENCODER_IN2, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(ENCODER_IN), updateEncoder, RISING); // Interupt to find X and X dot
+  //pinMode (ENCODER_IN, INPUT_PULLUP);
+  //pinMode (ENCODER_IN2, INPUT_PULLUP);
+  //attachInterrupt(digitalPinToInterrupt(ENCODER_IN), updateEncoder, RISING); // Interupt to find X and X dot
   previousMillis = millis();
 }
 
@@ -243,11 +296,11 @@ int proportionSpeed(int deltaX){ //find volt to reduce speed proportional to dis
   int minUnload = 50; //minimum voltage to move motor when unloaded
   int minLoad = 75; //minimum voltage (approx) to move motor when loaded
   
-  double Kp = 0.1;
-  int speedSig = Kp*deltaX;
+  double kp = 0.1;
+  int speedSig = kp*deltaX;
   voltAdjust = voltage - speedSig; //calculate new voltage
 
-//  voltAdjust = Kp*voltAdjust; //adjust voltage to percrentage
+//  voltAdjust = kp*voltAdjust; //adjust voltage to percrentage
   if(substate == 'A' && voltAdjust < minUnload){ //unloaded, minimum voltage needed to move
     voltAdjust = minUnload;
   }
@@ -378,4 +431,62 @@ void idle (void){ //idle
         motorSpeed(voltage);
   }
   */
+}
+
+void readEncoder(void){
+  long newPos;
+  float rad, radDot;
+  float degree, degreeDot;
+
+  currTime = millis();
+  deltaTime = (currTime - prevTime);
+
+  if(deltaTime > 10){
+    prevTime = currTime;
+    
+    newPos=myEnc.read();
+    
+      //Serial.print("DeltaTime: ");
+      //Serial.println(deltaTime);
+      deltaTimeSec = deltaTime/1000;
+      pos=newPos;
+
+      //-440 encoder count for one rev
+      rad = (float)pos/-440.0*(2.0 * 3.14159); //radians
+      
+      deltaRad = rad - prevRad;
+      prevRad = rad;
+      
+      radDot = deltaRad/deltaTimeSec; //rad/s
+      degree = rad*180/3.14159;
+      degreeDot = radDot*180/3.14159;
+      x=((float)(rad * 1.358)); //cm
+      xDot=((float)(radDot * 1.358)); //cm
+      /*
+      Serial.print('\t');
+      Serial.print("Theta, R: ");
+      Serial.print(rad);
+      Serial.println(" Rad");
+      
+      Serial.print('\t');
+      Serial.print("Theta, D: ");
+      Serial.print(degree);
+      Serial.println(" degrees");
+      
+      Serial.print('\t');
+      Serial.print("Theta Dot: ");
+      Serial.print(degreeDot);
+      Serial.println(" Deg/sec");
+      
+      Serial.print('\t');
+      Serial.print("X ");
+      Serial.print(x);
+      Serial.println(" cm");
+      */
+      Serial.print('\t');
+      Serial.print("XDot ");
+      Serial.print(xDot);
+      Serial.println(" cm/s");
+      
+  }
 }

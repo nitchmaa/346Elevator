@@ -89,8 +89,8 @@ NewPing sonarBot(trigBot, echoBot, MAX_DISTANCE); // NewPing setup of pins and m
 
 //DEFINE ROTARY ENCODER VARIABLES
 #define COUNT_REV 115 //Rodery encoder output pulse per rotation (Need to change depemnding on encoder)
-#define ENCODER_IN 3 //Encoder output to Aurdino Interrupt pin
-#define ENCODER_IN2 2
+#define ENCODER_IN 26 //Encoder output to Aurdino Interrupt pin
+#define ENCODER_IN2 27
 
  volatile long encoderValue = 0; //Pulse count from encoder 
  int interval = 100; //1 second interval measuments 
@@ -128,13 +128,22 @@ void setup() {
   digitalWrite(LED_BUILTIN, LOW);
   
   setUp(); //function to set pins
-  topActLoad();
-  botActLoad();
-  moveUp();
+  //topActLoad();
+  //botActLoad();
+  //moveUp();
 }
 
 
 void loop() {
+
+
+  while(1){
+    readThetaAndX();
+  }
+
+
+  
+  
   while(1){
     switch (state) {
       case 1:
@@ -399,7 +408,7 @@ void readThetaAndX(void){ //read theta and thetaDot, translate to x and xDot
     Serial.print('\t');
     Serial.print("Speed: ");
     Serial.print(rpm);
-    Serial.println(" RPM");
+    Serial.println(" RPM");*/
     Serial.print('\t');
     Serial.print("Theta: ");
     Serial.print(theta);
@@ -408,14 +417,14 @@ void readThetaAndX(void){ //read theta and thetaDot, translate to x and xDot
     Serial.print("Theta Dot: ");
     Serial.print(thetaDot);
     Serial.println(" Rad/sec");
-    Serial.print('\t');*/
+    Serial.print('\t');
     Serial.print("X ");
     Serial.print(x);
     Serial.println(" cm");
-    Serial.print('\t');/*
+    Serial.print('\t');
     Serial.print("XDot ");
     Serial.print(xDot);
-    Serial.println(" cm/s");*/
+    Serial.println(" cm/s");
   //}
   
   encoderValue = 0;
