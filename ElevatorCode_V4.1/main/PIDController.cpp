@@ -27,7 +27,7 @@ void PIDController::begin () {
   Kp = 1;
   Ki = 1;
   Kd = 1;
-  divisor = 10;
+  divisor = 14.5;
   doLimit = false;
   init = true;
 }
