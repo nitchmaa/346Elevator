@@ -329,7 +329,7 @@ void readEncoder(void){
     degree = rad*180/3.14159;
     degreeDot = radDot*180/3.14159;
     x=((double)(rad * 1.358)); //cm
-    xDot=((double)(radDot * 1.358)); //cm
+    xDot=((double)(radDot * 1.358)); //cm/s
     /*
     Serial.print('\t');
     Serial.print("Theta, R: ");

@@ -32,8 +32,52 @@ void setup () {
 void loop () {
 
   delay(5000);
+
+
+  /*
+  long prevTime;
+  double rad, radDot;
+  double degree, degreeDot;
+  
+  long currTime = millis();
+  long prevTime = currTime;
+  
+  double deltaTime;
+  double deltaTimeSec;
+  double deltaRad = 0;
+  double prevRad = 0;
+   */
+  
   while(1){
+    
   int sensorValue = encoder.read();  // Read the value from the sensor
+
+  /*
+  currTime = millis();
+  prevTime = currTime;
+
+  deltaTime = (currTime - prevTime);
+  deltaTimeSec = deltaTime/1000;
+
+  if(deltaTime > 10){ //greater than 10 ms
+    prevTime = currTime;
+    
+    sensorValue=myEnc.read();
+
+    //-440 encoder count for one rev
+    rad = (double)sensorValue/-440.0*(2.0 * 3.14159); //radians
+      
+    deltaRad = rad - prevRad;
+    prevRad = rad;
+      
+    radDot = deltaRad/deltaTimeSec; //rad/s
+    degree = rad*180/3.14159;
+    degreeDot = radDot*180/3.14159;
+    x=((double)(rad * 1.358)); //cm
+    xDot=((double)(radDot * 1.358)); //cm/s
+  }
+   */
+  
   Serial.print("Error: ");
   Serial.print(3700-sensorValue);
   // int sensorValue = analogRead(sensorPin);  // Read the value from the sensor
