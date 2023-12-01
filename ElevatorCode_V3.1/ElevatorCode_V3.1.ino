@@ -40,7 +40,7 @@ double x = 0;
 double xDot = 0;
 long previousMillis = 0;
 
-int maxVolt = 190;
+int maxVolt = 255;
 int minVolt = 50;
 
 

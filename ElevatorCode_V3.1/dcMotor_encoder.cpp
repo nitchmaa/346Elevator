@@ -35,6 +35,9 @@ void stopMotor (void){ //stops elevator
 }
 
 void motorSpeed(int ein){ //set motor speed; receives input voltage
+  if(ein > 190) ein = 190; //set voltage limits
+  else if (ein < 50) ein = 50;
+  
   analogWrite(MPEN, ein);
   Serial.print("Changing input voltage to: ");
   Serial.println(ein);
