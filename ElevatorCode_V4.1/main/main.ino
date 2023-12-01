@@ -16,6 +16,7 @@ PIDController pid; // Create an instance of the PID controller class, called "pi
 // Pins
 int outputPin   = 11;    // The pin the digital output PMW is connected to
 int sensorPin   = A0;   // The pin the analog sensor is connected to
+//int goal
 
 void setup () {
   Serial.begin(9600);   // Some methods require the Serial.begin() method to be called first
@@ -23,20 +24,24 @@ void setup () {
   pinMode(sensorPin, INPUT);
   
   pid.begin();          // initialize the PID instance
-  pid.setpoint(-3500);    // The "goal" the PID controller tries to "reach"
-  pid.tune(1, 1, 1);    // Tune the PID, arguments: kP, kI, kD
+  pid.setpoint(3700);    // The "goal" the PID controller tries to "reach"
+  pid.tune(1, 0, 0);    // Tune the PID, arguments: kP, kI, kD
   pid.limit(0, 255);    // Limit the PID output between 0 and 255, this is important to get rid of integral windup!
 }
 
 void loop () {
+
+  delay(5000);
+  while(1){
   int sensorValue = encoder.read();  // Read the value from the sensor
-  Serial.print("sensorValue: ");
-  Serial.println(sensorValue);
+  Serial.print("Error: ");
+  Serial.print(3700-sensorValue);
   // int sensorValue = analogRead(sensorPin);  // Read the value from the sensor
   int output = pid.compute(sensorValue);    // Let the PID compute the value, returns the optimal output
-  Serial.print("sensorValue: ");
-  Serial.println(sensorValue);
-  void runMotorUp();
+  Serial.print("    output: ");
+  Serial.println(output);
+  runMotorUp();
   analogWrite(outputPin, output);           // Write the output to the output pin
-  delay(30);                                // Delay for 30 ms
+  delay(100);   
+  }                             // Delay for 30 ms
 }
