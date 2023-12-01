@@ -6,10 +6,10 @@
  //long previousMillis = 0;
  long currentMillis = 0;
  /*
- float theta =0;
- float thetaDot = 0;
- float x = 0;
- float xDot = 0;
+ double theta =0;
+ double thetaDot = 0;
+ double x = 0;
+ double xDot = 0;
  */
  int encoderOverallValue;
  int b;
@@ -35,26 +35,29 @@ void stopMotor (void){ //stops elevator
 }
 
 void motorSpeed(int ein){ //set motor speed; receives input voltage
+  if(ein > 190) ein = 190; //set voltage limits
+  else if (ein < 50) ein = 50;
+  
   analogWrite(MPEN, ein);
   Serial.print("Changing input voltage to: ");
   Serial.println(ein);
 }
 
 
-void readThetaAndX(float *thetaPTR, float *thetaDotPTR, float *xPTR, double *xDotPTR, long *previousMilllisPTR){ //read theta and thetaDot, translate to x and xDot
-  float rpm = 0;
+void readThetaAndX(double *thetaPTR, double *thetaDotPTR, double *xPTR, double *xDotPTR, long *previousMilllisPTR){ //read theta and thetaDot, translate to x and xDot
+  double rpm = 0;
   currentMillis = millis();
   
   if (currentMillis - *previousMilllisPTR > interval){
     int timefortheta = currentMillis - *previousMilllisPTR;
     *previousMilllisPTR = currentMillis;
   
-   rpm = (float)(encoderValue * 600.0 / COUNT_REV);
-   //theta = (float)(theta + ((rpm / 60.0) * 2.0 * 3.14159)* (timefortheta/1000)); // Radians 
-   *thetaPTR = (((float)encoderOverallValue / COUNT_REV ) * 2 * 3.14159);
-   *thetaDotPTR = (float)((rpm /60.0) * 2.0 * 3.14159); //Radians Per Second
-   *xPTR = ((float)(*thetaPTR * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
-   *xDotPTR = ((float)*thetaDotPTR * 1.358); //Radius of the pully goes in the second term 
+   rpm = (double)(encoderValue * 600.0 / COUNT_REV);
+   //theta = (double)(theta + ((rpm / 60.0) * 2.0 * 3.14159)* (timefortheta/1000)); // Radians 
+   *thetaPTR = (((double)encoderOverallValue / COUNT_REV ) * 2 * 3.14159);
+   *thetaDotPTR = (double)((rpm /60.0) * 2.0 * 3.14159); //Radians Per Second
+   *xPTR = ((double)(*thetaPTR * 1.358)); //However big the radius of the pully is goes here, x starts at 70 
+   *xDotPTR = ((double)*thetaDotPTR * 1.358); //Radius of the pully goes in the second term 
 
   //if(rpm != 0){
     /*

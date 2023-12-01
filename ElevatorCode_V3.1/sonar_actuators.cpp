@@ -34,7 +34,7 @@ int objectDetect(void){ //detect object at platforms; returns 0 if no object, 1 
 }
 
 
-void topActLoad (float fraction){ //run top actuator
+void topActLoad (double fraction){ //run top actuator
   stepTop.setMaxSpeed(1000);//Set the maximum motor speed in steps per second
   stepTop.setAcceleration(200);//Set the maximum acceleration in steps per second^2
   
@@ -49,7 +49,7 @@ void topActLoad (float fraction){ //run top actuator
 }
 
 
-void botActLoad (float fraction){ //run bottom actuator
+void botActLoad (double fraction){ //run bottom actuator
   stepBot.setMaxSpeed(1000);//Set the maximum motor speed in steps per second
   stepBot.setAcceleration(200);//Set the maximum acceleration in steps per second^2
 
