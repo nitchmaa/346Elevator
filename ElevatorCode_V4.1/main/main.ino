@@ -24,9 +24,9 @@ void setup () {
   pinMode(sensorPin, INPUT);
   
   pid.begin();          // initialize the PID instance
-  pid.setpoint(3700);    // The "goal" the PID controller tries to "reach"
-  pid.tune(1, 12, 0);    // Tune the PID, arguments: kP, kI, kD
-  pid.limit(180, 255);    // Limit the PID output between 0 and 255, this is important to get rid of integral windup!
+  pid.setpoint(300);    // The "goal" the PID controller tries to "reach"
+  pid.tune(12, .035, 0);    // Tune the PID, arguments: kP, kI, kD
+  pid.limit(0, 255);    // Limit the PID output between 0 and 255, this is important to get rid of integral windup!
 }
 
 void loop () {
@@ -35,13 +35,13 @@ void loop () {
   while(1){
   int sensorValue = encoder.read();  // Read the value from the sensor
   Serial.print("Error: ");
-  Serial.print(3700-sensorValue);
+  Serial.print(300-sensorValue);
   // int sensorValue = analogRead(sensorPin);  // Read the value from the sensor
   int output = pid.compute(sensorValue);    // Let the PID compute the value, returns the optimal output
   Serial.print("    output: ");
   Serial.println(output);
   runMotorUp();
   analogWrite(outputPin, output);           // Write the output to the output pin
-  delay(100);   
+  delay(1);   
   }                             // Delay for 30 ms
 }

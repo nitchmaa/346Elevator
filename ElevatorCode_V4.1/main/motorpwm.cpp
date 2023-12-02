@@ -2,8 +2,8 @@
 
 
 //DEFINE VARIABLES CALLED INTO FUNCTIONS, PROTOTYPES, AND CLASSES////////////////////////////////////////////////////
-#define MP1 10
-#define MP2 12
+#define MP1 12
+#define MP2 10
 #define MPEN 11
 
 int pwm = 255;

@@ -2,7 +2,7 @@
 
 
 //DEFINE VARIABLES CALLED INTO FUNCTIONS, PROTOTYPES, AND CLASSES////////////////////////////////////////////////////
-#define MP1 10
+#define MP1 10 
 #define MP2 12
 #define MPEN 11
 int pwm=255;
@@ -21,7 +21,7 @@ void runMotorUp(){
   pinMode(MPEN, OUTPUT);
   digitalWrite(MP1, LOW);
   digitalWrite(MP2, HIGH);
-  analogWrite(MPEN,pwm);
+  //analogWrite(MPEN,pwm);
 }
  
 void TurnOFFA(){

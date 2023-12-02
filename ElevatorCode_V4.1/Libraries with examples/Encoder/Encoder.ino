@@ -20,7 +20,7 @@ void loop() {
   // if a character is sent from the serial monitor,
   // reset both back to zero.
   if (Serial.available()) {
-    Serial.read();
+    Serial.read(); 
     Serial.println("Reset zero");
     encoder.write(0);
   }
